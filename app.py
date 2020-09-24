@@ -1,3 +1,5 @@
+from models import User, Message, Follows
+from csv import DictReader
 import os
 
 from flask import Flask, render_template, request, flash, redirect, session, g
@@ -24,8 +26,21 @@ toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
+##############################################################################
+
 db.drop_all()
 db.create_all()
+
+with open('generator/users.csv') as users:
+    db.session.bulk_insert_mappings(User, DictReader(users))
+
+with open('generator/messages.csv') as messages:
+    db.session.bulk_insert_mappings(Message, DictReader(messages))
+
+with open('generator/follows.csv') as follows:
+    db.session.bulk_insert_mappings(Follows, DictReader(follows))
+
+db.session.commit()
 
 ##############################################################################
 # User signup/login/logout
@@ -115,7 +130,8 @@ def login():
 def logout():
     """Handle logout of user."""
 
-    # IMPLEMENT THIS
+    do_logout()
+    return redirect('/')
 
 
 ##############################################################################
@@ -213,7 +229,9 @@ def stop_following(follow_id):
 def profile():
     """Update profile for current user."""
 
-    # IMPLEMENT THIS
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
 
 
 @app.route('/users/delete', methods=["POST"])
