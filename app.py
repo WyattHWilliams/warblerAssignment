@@ -291,10 +291,6 @@ def remove_like(msg_id):
     # db.session.delete(like.id)
 
     like = Likes.query.filter_by(user_id=g.user.id, message_id=msg_id).first()
-    print('*********************************')
-    print(like)
-    print(User.query.get(g.user.id))
-    print('*********************************')
     db.session.delete(like)
     db.session.commit()
     return redirect('/')
@@ -372,7 +368,7 @@ def homepage():
         for r in res:
             likes.append(r.message_id)
 
-        return render_template('home.html', messages=messages, likes=likes)
+        return render_template('home.html', messages=messages, likes=likes, user=g.user)
 
     else:
         return render_template('home-anon.html')
