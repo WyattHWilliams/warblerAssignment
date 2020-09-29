@@ -41,6 +41,9 @@ class UserModelTestCase(TestCase):
 
         self.client = app.test_client()
 
+    def tearDown(self):
+        db.session.rollback()
+
     def test_user_model(self):
         """Does basic model work?"""
 
@@ -56,8 +59,37 @@ class UserModelTestCase(TestCase):
         # User should have no messages & no followers
         self.assertEqual(len(u.messages), 0)
         self.assertEqual(len(u.followers), 0)
+        self.assertEqual(u.email, "test@test.com")
 
         self.assertEqual(User.authenticate(
             'testuser', 'HASHED_PASSWORD'), u)
         self.assertEqual(User.authenticate(
             'testuser', 'WRONG_PASSWORD'), False)
+
+    def test_user_create_failure(self):
+        """does the user model signup method fail correctly?"""
+
+        u1 = User(
+            email="test@test.com",
+            username="",
+            password="HASHED_PASSWORD"
+        )
+
+        self.assertEqual(u1, None)
+
+    def test_user_duplicate_failure(self):
+        """does a non-unique entry fail?"""
+
+        u1 = User(
+            email="u1@test.com",
+            username="u1",
+            password="HASHED_PASSWORD"
+        )
+
+        u2 = User(
+            email="u2@test.com",
+            username="u1",
+            password="OTHER_PASSWORD"
+        )
+
+        self.assertEqual(u2, None)
