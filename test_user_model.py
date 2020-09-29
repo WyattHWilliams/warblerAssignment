@@ -75,6 +75,9 @@ class UserModelTestCase(TestCase):
             password="HASHED_PASSWORD"
         )
 
+        db.session.add(u1)
+        db.session.commit()
+
         self.assertEqual(u1, None)
 
     def test_user_duplicate_failure(self):
@@ -92,4 +95,39 @@ class UserModelTestCase(TestCase):
             password="OTHER_PASSWORD"
         )
 
+        db.session.add(u1)
+        db.session.add(u2)
+        db.session.commit()
+
         self.assertEqual(u2, None)
+
+    def test_user_following(self):
+        """can we correctly determine followers?"""
+
+        u1 = User(
+            email="u1@test.com",
+            username="u1",
+            password="HASHED_PASSWORD"
+        )
+
+        u2 = User(
+            email="u2@test.com",
+            username="u2",
+            password="OTHER_PASSWORD"
+        )
+
+        db.session.add(u1)
+        db.session.add(u2)
+        db.session.commit()
+
+        do_login(u1)
+
+        with app.test_client() as client:
+            resp = client.post(
+                f'/users/follow/{u2.id}'
+            )
+
+            self.assertEqual(u1.is_followed_by(u2), True)
+            self.assertEqual(u2.is_followed_by(u1), False)
+            self.assertEqual(u2.is_following(u1), True)
+            self.assertEqual(u1.is_following(u2), False)
