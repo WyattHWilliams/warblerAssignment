@@ -21,5 +21,17 @@ class UserViewsTestCase(TestCase):
 
         self.client = app.test_client()
 
+        self.testuser = User.signup(username="testuser",
+                                    email="test@test.com",
+                                    password="testuser",
+                                    image_url=None)
+
+        db.session.commit()
+
     def tearDown(self):
         db.session.rollback()
+
+    def test_delete_message(self):
+        with self.client as client:
+            with client.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id

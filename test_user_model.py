@@ -120,9 +120,9 @@ class UserModelTestCase(TestCase):
         db.session.add(u2)
         db.session.commit()
 
-        do_login(u1)
-
-        with app.test_client() as client:
+        with self.client as client:
+            with client.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
             resp = client.post(
                 f'/users/follow/{u2.id}'
             )
